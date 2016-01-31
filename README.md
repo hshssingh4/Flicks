@@ -25,14 +25,15 @@ The following **additional** features are implemented:
 
 - [x] User can dismiss the network error view if they desire using the close button provided.
 - [x] If an image is not available, user sees a custom designed image that reads "Image Not Available."
-- [x] The color of the status bar text has been changed to light so it gells well with the app design!
+- [x] The color content of the status bar text has been changed to light so it gells well with the app design!
 - [x] Launch Icon and App Icons are added to make the look and feel of **Flicks** more desirable.
+- [x] The Collection View also displays the "Release Date" along with the movie's "Rating."
 
 ## Video Walkthrough 
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src= 'http://i.imgur.com/brcRfkk.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
