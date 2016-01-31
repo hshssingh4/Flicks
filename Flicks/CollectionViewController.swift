@@ -1,8 +1,8 @@
 //
-//  MoviesViewController.swift
+//  CollectionViewController.swift
 //  Flicks
 //
-//  Created by Harpreet Singh on 1/6/16.
+//  Created by Harpreet Singh on 1/13/16.
 //  Copyright © 2016 Harpreet Singh. All rights reserved.
 //
 
@@ -10,11 +10,11 @@ import UIKit
 import AFNetworking
 import SVProgressHUD
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate
+class CollectionViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UISearchBarDelegate
 {
-    @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var errorView: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var movies: [NSDictionary]?
     var filteredData: [NSDictionary]?
@@ -25,8 +25,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     override func viewDidLoad()
     {
         super.viewDidLoad()
-        tableView.dataSource = self
-        tableView.delegate = self
+        collectionView.dataSource = self
+        collectionView.delegate = self
         searchBar.delegate = self
         errorView.hidden = true
         SVProgressHUD.show()
@@ -59,7 +59,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                         {
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             self.filteredData = self.movies
-                            self.tableView.reloadData()
+                            self.collectionView.reloadData()
                         }
                     }
                 }
@@ -67,7 +67,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 {
                     self.errorView.hidden = false
                     self.searchBar.userInteractionEnabled = false
-                    
                 }
         });
         task.resume()
@@ -78,7 +77,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         refreshControl = UIRefreshControl()
         refreshControl.tintColor = UIColor.blackColor()
         refreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
-        tableView.insertSubview(refreshControl, atIndex: 0)
+        collectionView.insertSubview(refreshControl, atIndex: 0)
     }
     
     func onRefresh()
@@ -90,10 +89,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     override func didReceiveMemoryWarning()
     {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
         if let filteredData = filteredData
         {
@@ -105,14 +103,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell
     {
-        let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CollectionCell", forIndexPath: indexPath) as! CollectionViewCell
         let movie = filteredData![indexPath.row]
+        let release = movie["release_date"] as! String
+        let rating = String(movie["vote_average"] as! Double)
         let title = movie["title"] as! String
-        let overview = movie["overview"] as! String
         cell.titleLabel.text = title
-        cell.overviewLabel.text = overview
+        cell.releaseLabel.text = release
+        cell.ratingLabel.text = rating
         
         let posterPath = movie["poster_path"] as? String
         let baseUrl = "https://image.tmdb.org/t/p/w342"
@@ -137,32 +137,36 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 {
                     cell.posterView.image = image
                 }
-            }, failure: nil)
+                }, failure: nil)
         }
         else
         {
             cell.posterView.image = UIImage(named: "ImageNotAvailable")
         }
-      
+        
         let newCell = modifyCell(cell)
         return newCell
     }
     
-    func modifyCell(cell: MovieCell) -> MovieCell
+    func modifyCell(cell: CollectionViewCell) -> CollectionViewCell
     {
         cell.backgroundColor = customColor
-        cell.titleLabel.textColor = UIColor.blackColor()
-        cell.overviewLabel.textColor = UIColor.blackColor()
-        cell.posterView.layer.cornerRadius = 10.0
-        cell.posterView.clipsToBounds = true
+        cell.layer.cornerRadius = 20.0
+        cell.releaseLabel.backgroundColor = collectionView.backgroundColor
+        cell.releaseLabel.layer.masksToBounds = true
+        cell.releaseLabel.layer.cornerRadius = 10.0
+        cell.ratingLabel.backgroundColor = collectionView.backgroundColor
+        cell.ratingLabel.layer.masksToBounds = true
+        cell.ratingLabel.layer.cornerRadius = 10.0
+        cell.posterView.layer.cornerRadius = 20.0
+        cell.posterView.clipsToBounds = true;
         return cell
     }
-    
+
     func modifyView()
     {
         self.searchBar.showsCancelButton = false
-        self.tableView.setContentOffset(CGPoint(x: 0, y: 44), animated: true)
-        self.tableView.backgroundColor = customColor
+        self.automaticallyAdjustsScrollViewInsets = false
         self.navigationController?.navigationBar.barTintColor = navBarColor
         self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
     }
@@ -189,7 +193,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
         
         filteredData = data
-        tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar)
@@ -200,7 +204,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func searchBarCancelButtonClicked(searchBar: UISearchBar)
     {
-        tableView.insertSubview(refreshControl, atIndex: 0)
+        collectionView.insertSubview(refreshControl, atIndex: 0)
         self.searchBar.endEditing(true)
         self.searchBar.text = ""
         self.searchBar(searchBar, textDidChange: self.searchBar.text!)
@@ -221,6 +225,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     {
         errorView.hidden = true
     }
+    
+    
     /*
     // MARK: - Navigation
 
