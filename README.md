@@ -39,7 +39,7 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
-Implementing the search bar was bit of a hassle at first since I wasn't comfortable with using loops in Swift. But now, it works perfectly.
+Implementing the search bar was bit of a hassle at first since I wasn't comfortable with loops in Swift. But now, it works perfectly.
 
 ## License
 
