@@ -19,6 +19,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     var movies: [NSDictionary]?
     var filteredData: [NSDictionary]?
     var refreshControl: UIRefreshControl!
+    var endpoint: String!
     let customColor = UIColor(red: 242.0/255.0, green: 242.0/255.0, blue: 242.0/255.0, alpha: 1)
     let navBarColor = UIColor(red: 100.0/255.0, green: 100.0/255.0, blue: 255.0/255.0, alpha: 1)
     
@@ -39,7 +40,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func loadMoviesData()
     {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -152,8 +153,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     {
         cell.backgroundColor = customColor
         cell.titleLabel.textColor = UIColor.blackColor()
+        cell.titleLabel.adjustsFontSizeToFitWidth = true
         cell.overviewLabel.textColor = UIColor.blackColor()
-        cell.posterView.layer.cornerRadius = 10.0
         cell.posterView.clipsToBounds = true
         return cell
     }
@@ -165,6 +166,11 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         self.tableView.backgroundColor = customColor
         self.navigationController?.navigationBar.barTintColor = navBarColor
         self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+    {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
     // Search bar functions.
@@ -204,12 +210,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         self.searchBar.endEditing(true)
         self.searchBar.text = ""
         self.searchBar(searchBar, textDidChange: self.searchBar.text!)
+        self.navigationItem.rightBarButtonItem?.enabled = true
     }
     
     func searchBarTextDidBeginEditing(searchBar: UISearchBar)
     {
         self.refreshControl.removeFromSuperview()
         self.searchBar.showsCancelButton = true
+        self.navigationItem.rightBarButtonItem?.enabled = false
     }
     
     func searchBarTextDidEndEditing(searchBar: UISearchBar)
@@ -221,14 +229,76 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     {
         errorView.hidden = true
     }
-    /*
+    
+    // Sort Methods
+    
+    @IBAction func sortObjects(sender: AnyObject)
+    {
+        let alert = UIAlertController(title: "Sort", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
+        
+        // Four Actions Added.
+        alert.addAction(UIAlertAction(title: "Ascending (Title)", style: UIAlertActionStyle.Default, handler: sortAscending))
+        alert.addAction(UIAlertAction(title: "Descending (Title)", style: UIAlertActionStyle.Default, handler: sortDescending))
+        alert.addAction(UIAlertAction(title: "Original", style: UIAlertActionStyle.Default, handler: sortOriginal))
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Destructive, handler: nil))
+    
+        // Disable Originial if search bar is enabled.
+        /*if (searchBar.isFirstResponder())
+        {
+            alert.actions[2].enabled = false
+        }*/
+        
+        // Present the Alert.
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    func sortAscending(alert: UIAlertAction!)
+    {
+        filteredData?.sortInPlace {
+            item1, item2 in
+            let movietitle1 = item1["title"] as! String
+            let movietitle2 = item2["title"] as! String
+            return movietitle2 > movietitle1
+        }
+        tableView.reloadData()
+    }
+    
+    func sortDescending(alert: UIAlertAction!)
+    {
+        filteredData?.sortInPlace {
+            item1, item2 in
+            let movietitle1 = item1["title"] as! String
+            let movietitle2 = item2["title"] as! String
+            return movietitle1 > movietitle2
+        }
+        tableView.reloadData()
+    }
+    
+    func sortOriginal(alert: UIAlertAction!)
+    {
+        filteredData = movies
+        tableView.reloadData()
+    }
+        
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
+    {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        if let cell = sender as? UITableViewCell
+        {
+            let indexPath = tableView.indexPathForCell(cell)
+            let movie = filteredData![indexPath!.row]
+            let detailViewController = segue.destinationViewController as! DetailViewController
+            
+            detailViewController.movie = movie
+        }
+        else
+        {
+            let collectionViewController = segue.destinationViewController as! CollectionViewController
+            collectionViewController.endpoint = endpoint
+        }
     }
-    */
-
 }
