@@ -96,7 +96,7 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
-Loading a low resolution image before the high resolution one.
+Loading a low resolution image before the high resolution one was a bit tough at first as I didn't knew if I had to nest the methods to set the image.
 
 ## License
 
