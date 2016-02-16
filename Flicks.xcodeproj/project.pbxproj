@@ -14,7 +14,6 @@
 		CF04A3A21C3DA53300D712D8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF04A3A01C3DA53300D712D8 /* LaunchScreen.storyboard */; };
 		CF04A3AA1C3DA5B900D712D8 /* MoviesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF04A3A91C3DA5B900D712D8 /* MoviesViewController.swift */; };
 		CF04A3AD1C3DAFA300D712D8 /* MovieCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF04A3AC1C3DAFA300D712D8 /* MovieCell.swift */; };
-		CFA4318E1C46E10900F7995E /* CollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA4318D1C46E10900F7995E /* CollectionViewController.swift */; };
 		CFA431901C46E1D200F7995E /* CollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA4318F1C46E1D200F7995E /* CollectionViewCell.swift */; };
 		CFD8FA5B1C5EADF8004C8169 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD8FA5A1C5EADF8004C8169 /* DetailViewController.swift */; };
 /* End PBXBuildFile section */
@@ -31,7 +30,6 @@
 		CF04A3A31C3DA53300D712D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF04A3A91C3DA5B900D712D8 /* MoviesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoviesViewController.swift; sourceTree = "<group>"; };
 		CF04A3AC1C3DAFA300D712D8 /* MovieCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieCell.swift; sourceTree = "<group>"; };
-		CFA4318D1C46E10900F7995E /* CollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewController.swift; sourceTree = "<group>"; };
 		CFA4318F1C46E1D200F7995E /* CollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewCell.swift; sourceTree = "<group>"; };
 		CFD8FA5A1C5EADF8004C8169 /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,7 +108,6 @@
 			isa = PBXGroup;
 			children = (
 				CF04A3A91C3DA5B900D712D8 /* MoviesViewController.swift */,
-				CFA4318D1C46E10900F7995E /* CollectionViewController.swift */,
 				CFD8FA5A1C5EADF8004C8169 /* DetailViewController.swift */,
 			);
 			name = "View Controllers";
@@ -240,7 +237,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CFA431901C46E1D200F7995E /* CollectionViewCell.swift in Sources */,
-				CFA4318E1C46E10900F7995E /* CollectionViewController.swift in Sources */,
 				CF04A3981C3DA53300D712D8 /* AppDelegate.swift in Sources */,
 				CFD8FA5B1C5EADF8004C8169 /* DetailViewController.swift in Sources */,
 				CF04A3AA1C3DA5B900D712D8 /* MoviesViewController.swift in Sources */,

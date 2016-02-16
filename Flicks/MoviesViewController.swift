@@ -10,15 +10,17 @@ import UIKit
 import AFNetworking
 import SVProgressHUD
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate
+class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UICollectionViewDataSource, UICollectionViewDelegate
 {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var errorView: UIView!
+    @IBOutlet weak var collectionView: UICollectionView!
     
     var movies: [NSDictionary]?
     var filteredData: [NSDictionary]?
     var refreshControl: UIRefreshControl!
+    var collectionViewRefreshControl: UIRefreshControl!
     var endpoint: String!
     let customColor = UIColor(red: 242.0/255.0, green: 242.0/255.0, blue: 242.0/255.0, alpha: 1)
     let navBarColor = UIColor(red: 100.0/255.0, green: 100.0/255.0, blue: 255.0/255.0, alpha: 1)
@@ -28,6 +30,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
+        collectionView.dataSource = self
+        collectionView.delegate = self
         searchBar.delegate = self
         errorView.hidden = true
         SVProgressHUD.show()
@@ -35,6 +39,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         SVProgressHUD.dismiss()
         addRefreshControl()
         modifyView()
+        hideCollectionView()
     }
     
     func loadMoviesData()
@@ -61,6 +66,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             self.filteredData = self.movies
                             self.tableView.reloadData()
+                            self.collectionView.reloadData()
                         }
                     }
                 }
@@ -79,13 +85,18 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         refreshControl = UIRefreshControl()
         refreshControl.tintColor = UIColor.blackColor()
         refreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
+        collectionViewRefreshControl = UIRefreshControl()
+        collectionViewRefreshControl.tintColor = UIColor.blackColor()
+        collectionViewRefreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
+        collectionView.insertSubview(collectionViewRefreshControl, atIndex: 0)
     }
     
     func onRefresh()
     {
         loadMoviesData()
         self.refreshControl.endRefreshing()
+        self.collectionViewRefreshControl.endRefreshing()
     }
 
     override func didReceiveMemoryWarning()
@@ -159,10 +170,21 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         return cell
     }
     
+    func modifyCollectionCell(cell: CollectionViewCell) -> CollectionViewCell
+    {
+        cell.backgroundColor = customColor
+        cell.releaseLabel.backgroundColor = collectionView.backgroundColor
+        cell.releaseLabel.layer.masksToBounds = true
+        cell.releaseLabel.layer.cornerRadius = 10.0
+        cell.ratingLabel.backgroundColor = collectionView.backgroundColor
+        cell.ratingLabel.layer.masksToBounds = true
+        cell.ratingLabel.layer.cornerRadius = 10.0
+        return cell
+    }
+    
     func modifyView()
     {
         self.searchBar.showsCancelButton = false
-        self.tableView.setContentOffset(CGPoint(x: 0, y: 44), animated: true)
         self.tableView.backgroundColor = customColor
         self.navigationController?.navigationBar.barTintColor = navBarColor
         self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
@@ -196,6 +218,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         filteredData = data
         tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar)
@@ -207,6 +230,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func searchBarCancelButtonClicked(searchBar: UISearchBar)
     {
         tableView.insertSubview(refreshControl, atIndex: 0)
+        collectionView.insertSubview(collectionViewRefreshControl, atIndex: 0)
         self.searchBar.endEditing(true)
         self.searchBar.text = ""
         self.searchBar(searchBar, textDidChange: self.searchBar.text!)
@@ -216,8 +240,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func searchBarTextDidBeginEditing(searchBar: UISearchBar)
     {
         self.refreshControl.removeFromSuperview()
+        self.collectionViewRefreshControl.removeFromSuperview()
         self.searchBar.showsCancelButton = true
-        self.navigationItem.rightBarButtonItem?.enabled = false
     }
     
     func searchBarTextDidEndEditing(searchBar: UISearchBar)
@@ -261,6 +285,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             return movietitle2 > movietitle1
         }
         tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func sortDescending(alert: UIAlertAction!)
@@ -272,13 +297,122 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             return movietitle1 > movietitle2
         }
         tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func sortOriginal(alert: UIAlertAction!)
     {
         filteredData = movies
         tableView.reloadData()
+        collectionView.reloadData()
     }
+    
+    // Collection View Methods
+    
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
+    {
+        if let filteredData = filteredData
+        {
+            return filteredData.count
+        }
+        else
+        {
+            return 0
+        }
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell
+    {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CollectionCell", forIndexPath: indexPath) as! CollectionViewCell
+        let movie = filteredData![indexPath.row]
+        let release = movie["release_date"] as! String
+        let rating = String(movie["vote_average"] as! Double)
+        let title = movie["title"] as! String
+        cell.titleLabel.text = title
+        cell.releaseLabel.text = release
+        cell.ratingLabel.text = rating
+        
+        let posterPath = movie["poster_path"] as? String
+        let baseUrl = "https://image.tmdb.org/t/p/w342"
+        
+        if posterPath != nil
+        {
+            let imageUrl = NSURL(string: baseUrl + posterPath!)
+            //cell.posterView.setImageWithURL(imageUrl!)
+            
+            let request = NSURLRequest(URL: imageUrl!)
+            cell.posterView.setImageWithURLRequest(request, placeholderImage: nil, success: {(request:NSURLRequest!,response:NSHTTPURLResponse?, image:UIImage!) -> Void in
+                if response != nil
+                {
+                    cell.posterView.alpha = 0
+                    cell.posterView.image = image
+                    UIView.animateWithDuration(1.0, animations:
+                        {
+                            cell.posterView.alpha = 1
+                    })
+                }
+                else
+                {
+                    cell.posterView.image = image
+                }
+                }, failure: nil)
+        }
+        else
+        {
+            cell.posterView.image = UIImage(named: "ImageNotAvailable")
+        }
+        
+        let newCell = modifyCollectionCell(cell)
+        return newCell
+    }
+    
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath)
+    {
+        let cell = collectionView.cellForItemAtIndexPath(indexPath)
+        cell?.backgroundColor = UIColor.lightGrayColor()
+        UIView.animateWithDuration(0.3, animations: {
+            cell?.backgroundColor = self.customColor
+        })
+        
+    }
+    
+    func collectionView(collectionView: UICollectionView, didHighlightItemAtIndexPath indexPath: NSIndexPath)
+    {
+        let cell = collectionView.cellForItemAtIndexPath(indexPath)
+        cell?.backgroundColor = UIColor.lightGrayColor()
+    }
+    
+    func collectionView(collectionView: UICollectionView, didUnhighlightItemAtIndexPath indexPath: NSIndexPath)
+    {
+        let cell = collectionView.cellForItemAtIndexPath(indexPath)
+        cell?.backgroundColor = customColor
+    }
+
+    //Show/Hide Collection View and Table View
+    @IBAction func switchViews(sender: AnyObject)
+    {
+        if(collectionView.hidden)
+        {
+            hideTableView()
+        }
+        else
+        {
+            hideCollectionView()
+        }
+    }
+    
+    func hideTableView()
+    {
+        UIView.transitionFromView(tableView, toView: collectionView, duration: 1.0, options: UIViewAnimationOptions.ShowHideTransitionViews, completion: nil)
+        navigationItem.leftBarButtonItem?.image = UIImage(named: "TitleViewIcon")
+    }
+    
+    func hideCollectionView()
+    {
+        UIView.transitionFromView(collectionView, toView: tableView, duration: 1.0, options: UIViewAnimationOptions.ShowHideTransitionViews, completion: nil)
+        navigationItem.leftBarButtonItem?.image = UIImage(named: "CollectionViewIcon")
+    }
+
         
     // MARK: - Navigation
 
@@ -295,10 +429,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             
             detailViewController.movie = movie
         }
-        else
+        else if let cell = sender as? UICollectionViewCell
         {
-            let collectionViewController = segue.destinationViewController as! CollectionViewController
-            collectionViewController.endpoint = endpoint
+            let indexPath = collectionView.indexPathForCell(cell)
+            let movie = filteredData![indexPath!.row]
+            let detailViewController = segue.destinationViewController as! DetailViewController
+            
+            detailViewController.movie = movie
         }
     }
 }
