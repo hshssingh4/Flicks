@@ -40,28 +40,28 @@ class DetailViewController: UIViewController
         
         if posterPath != nil
         {
-            let smallImageUrl = NSURL(string: smallBaseUrl + posterPath!)
-            let largeImageUrl = NSURL(string: largeBaseUrl + posterPath!)
+            let smallImageUrl = URL(string: smallBaseUrl + posterPath!)
+            let largeImageUrl = URL(string: largeBaseUrl + posterPath!)
             
-            let smallImageRequest = NSURLRequest(URL: smallImageUrl!)
-            let largeImageRequest = NSURLRequest(URL: largeImageUrl!)
+            let smallImageRequest = URLRequest(url: smallImageUrl!)
+            let largeImageRequest = URLRequest(url: largeImageUrl!)
             
-            self.posterImageView.setImageWithURLRequest(
+            self.posterImageView.setImageWith(
                 smallImageRequest,
                 placeholderImage: nil,
-                success: {(smallImageRequest:NSURLRequest!,smallImageResponse:NSHTTPURLResponse?, smallImage:UIImage!) -> Void in
+                success: {(smallImageRequest:URLRequest!,smallImageResponse:HTTPURLResponse?, smallImage:UIImage!) -> Void in
 
                     self.posterImageView.alpha = 0.9
                     self.posterImageView.image = smallImage
                     
-                    UIView.animateWithDuration(
-                        0.5,
+                    UIView.animate(
+                        withDuration: 0.5,
                         animations: {
                             self.posterImageView.alpha = 1
                     },
                         completion: { (success) -> Void in
                             
-                            self.posterImageView.setImageWithURLRequest(
+                            self.posterImageView.setImageWith(
                                 largeImageRequest,
                                 placeholderImage: smallImage,
                                 success: { (largeImageRequest, largeImageResponse, largeImage) -> Void in

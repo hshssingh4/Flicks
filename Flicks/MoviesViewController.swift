@@ -33,7 +33,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         collectionView.dataSource = self
         collectionView.delegate = self
         searchBar.delegate = self
-        errorView.hidden = true
+        errorView.isHidden = true
         SVProgressHUD.show()
         loadMoviesData()
         SVProgressHUD.dismiss()
@@ -45,23 +45,23 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func loadMoviesData()
     {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
-        let request = NSURLRequest(URL: url!)
-        let session = NSURLSession(
-            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+        let url = URL(string:"https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=\(apiKey)")
+        let request = URLRequest(url: url!)
+        let session = URLSession(
+            configuration: URLSessionConfiguration.default,
             delegate:nil,
-            delegateQueue:NSOperationQueue.mainQueue()
+            delegateQueue:OperationQueue.main
         )
-        let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
+        let task : URLSessionDataTask = session.dataTask(with: request,
             completionHandler: { (dataOrNil, response, error) in
                 if error == nil
                 {
-                    self.errorView.hidden = true
-                    self.searchBar.userInteractionEnabled = true
+                    self.errorView.isHidden = true
+                    self.searchBar.isUserInteractionEnabled = true
                     if let data = dataOrNil
                     {
-                        if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
-                            data, options:[]) as? NSDictionary
+                        if let responseDictionary = try! JSONSerialization.jsonObject(
+                            with: data, options:[]) as? NSDictionary
                         {
                             self.movies = responseDictionary["results"] as? [NSDictionary]
                             self.filteredData = self.movies
@@ -72,8 +72,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 }
                 else
                 {
-                    self.errorView.hidden = false
-                    self.searchBar.userInteractionEnabled = false
+                    self.errorView.isHidden = false
+                    self.searchBar.isUserInteractionEnabled = false
                     
                 }
         });
@@ -83,13 +83,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     func addRefreshControl()
     {
         refreshControl = UIRefreshControl()
-        refreshControl.tintColor = UIColor.blackColor()
-        refreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
+        refreshControl.tintColor = UIColor.black
+        refreshControl.addTarget(self, action: #selector(MoviesViewController.onRefresh), for: UIControlEvents.valueChanged)
         collectionViewRefreshControl = UIRefreshControl()
-        collectionViewRefreshControl.tintColor = UIColor.blackColor()
-        collectionViewRefreshControl.addTarget(self, action: "onRefresh", forControlEvents: UIControlEvents.ValueChanged)
-        tableView.insertSubview(refreshControl, atIndex: 0)
-        collectionView.insertSubview(collectionViewRefreshControl, atIndex: 0)
+        collectionViewRefreshControl.tintColor = UIColor.black
+        collectionViewRefreshControl.addTarget(self, action: #selector(MoviesViewController.onRefresh), for: UIControlEvents.valueChanged)
+        tableView.insertSubview(refreshControl, at: 0)
+        collectionView.insertSubview(collectionViewRefreshControl, at: 0)
     }
     
     func onRefresh()
@@ -105,7 +105,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         // Dispose of any resources that can be recreated.
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         if let filteredData = filteredData
         {
@@ -117,10 +117,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
-        let movie = filteredData![indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        let movie = filteredData![(indexPath as NSIndexPath).row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         cell.titleLabel.text = title
@@ -131,16 +131,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         if posterPath != nil
         {
-            let imageUrl = NSURL(string: baseUrl + posterPath!)
+            let imageUrl = URL(string: baseUrl + posterPath!)
             //cell.posterView.setImageWithURL(imageUrl!)
             
-            let request = NSURLRequest(URL: imageUrl!)
-            cell.posterView.setImageWithURLRequest(request, placeholderImage: nil, success: {(request:NSURLRequest!,response:NSHTTPURLResponse?, image:UIImage!) -> Void in
+            let request = URLRequest(url: imageUrl!)
+            cell.posterView.setImageWith(request, placeholderImage: nil, success: {(request:URLRequest!,response:HTTPURLResponse?, image:UIImage!) -> Void in
                 if response != nil
                 {
                     cell.posterView.alpha = 0
                     cell.posterView.image = image
-                    UIView.animateWithDuration(1.0, animations:
+                    UIView.animate(withDuration: 1.0, animations:
                         {
                             cell.posterView.alpha = 1
                     })
@@ -160,17 +160,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         return newCell
     }
     
-    func modifyCell(cell: MovieCell) -> MovieCell
+    func modifyCell(_ cell: MovieCell) -> MovieCell
     {
         cell.backgroundColor = customColor
-        cell.titleLabel.textColor = UIColor.blackColor()
+        cell.titleLabel.textColor = UIColor.black
         cell.titleLabel.adjustsFontSizeToFitWidth = true
-        cell.overviewLabel.textColor = UIColor.blackColor()
+        cell.overviewLabel.textColor = UIColor.black
         cell.posterView.clipsToBounds = true
         return cell
     }
     
-    func modifyCollectionCell(cell: CollectionViewCell) -> CollectionViewCell
+    func modifyCollectionCell(_ cell: CollectionViewCell) -> CollectionViewCell
     {
         cell.backgroundColor = customColor
         cell.releaseLabel.backgroundColor = collectionView.backgroundColor
@@ -187,17 +187,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         self.searchBar.showsCancelButton = false
         self.tableView.backgroundColor = customColor
         self.navigationController?.navigationBar.barTintColor = navBarColor
-        self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
+        self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     // Search bar functions.
     
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String)
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String)
     {
         var data = [NSDictionary]()
         
@@ -209,7 +209,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         {
             for value in movies!
             {
-                if ((value["title"] as! String).uppercaseString).containsString(searchText.uppercaseString)
+                if ((value["title"] as! String).uppercased()).contains(searchText.uppercased())
                 {
                     data.append(value)
                 }
@@ -221,50 +221,50 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         collectionView.reloadData()
     }
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar)
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar)
     {
         self.searchBar.endEditing(true)
         self.searchBar.showsCancelButton = true
     }
     
-    func searchBarCancelButtonClicked(searchBar: UISearchBar)
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar)
     {
-        tableView.insertSubview(refreshControl, atIndex: 0)
-        collectionView.insertSubview(collectionViewRefreshControl, atIndex: 0)
+        tableView.insertSubview(refreshControl, at: 0)
+        collectionView.insertSubview(collectionViewRefreshControl, at: 0)
         self.searchBar.endEditing(true)
         self.searchBar.text = ""
         self.searchBar(searchBar, textDidChange: self.searchBar.text!)
-        self.navigationItem.rightBarButtonItem?.enabled = true
+        self.navigationItem.rightBarButtonItem?.isEnabled = true
     }
     
-    func searchBarTextDidBeginEditing(searchBar: UISearchBar)
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar)
     {
         self.refreshControl.removeFromSuperview()
         self.collectionViewRefreshControl.removeFromSuperview()
         self.searchBar.showsCancelButton = true
     }
     
-    func searchBarTextDidEndEditing(searchBar: UISearchBar)
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar)
     {
         self.searchBar.showsCancelButton = false
     }
     
-    @IBAction func closeErrorView(sender: UIButton)
+    @IBAction func closeErrorView(_ sender: UIButton)
     {
-        errorView.hidden = true
+        errorView.isHidden = true
     }
     
     // Sort Methods
     
-    @IBAction func sortObjects(sender: AnyObject)
+    @IBAction func sortObjects(_ sender: AnyObject)
     {
-        let alert = UIAlertController(title: "Sort", message: nil, preferredStyle: UIAlertControllerStyle.ActionSheet)
+        let alert = UIAlertController(title: "Sort", message: nil, preferredStyle: UIAlertControllerStyle.actionSheet)
         
         // Four Actions Added.
-        alert.addAction(UIAlertAction(title: "Ascending (Title)", style: UIAlertActionStyle.Default, handler: sortAscending))
-        alert.addAction(UIAlertAction(title: "Descending (Title)", style: UIAlertActionStyle.Default, handler: sortDescending))
-        alert.addAction(UIAlertAction(title: "Original", style: UIAlertActionStyle.Default, handler: sortOriginal))
-        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Destructive, handler: nil))
+        alert.addAction(UIAlertAction(title: "Ascending (Title)", style: UIAlertActionStyle.default, handler: sortAscending))
+        alert.addAction(UIAlertAction(title: "Descending (Title)", style: UIAlertActionStyle.default, handler: sortDescending))
+        alert.addAction(UIAlertAction(title: "Original", style: UIAlertActionStyle.default, handler: sortOriginal))
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.destructive, handler: nil))
     
         // Disable Originial if search bar is enabled.
         /*if (searchBar.isFirstResponder())
@@ -273,12 +273,12 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }*/
         
         // Present the Alert.
-        self.presentViewController(alert, animated: true, completion: nil)
+        self.present(alert, animated: true, completion: nil)
     }
     
-    func sortAscending(alert: UIAlertAction!)
+    func sortAscending(_ alert: UIAlertAction!)
     {
-        filteredData?.sortInPlace {
+        filteredData?.sort {
             item1, item2 in
             let movietitle1 = item1["title"] as! String
             let movietitle2 = item2["title"] as! String
@@ -288,9 +288,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         collectionView.reloadData()
     }
     
-    func sortDescending(alert: UIAlertAction!)
+    func sortDescending(_ alert: UIAlertAction!)
     {
-        filteredData?.sortInPlace {
+        filteredData?.sort {
             item1, item2 in
             let movietitle1 = item1["title"] as! String
             let movietitle2 = item2["title"] as! String
@@ -300,7 +300,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         collectionView.reloadData()
     }
     
-    func sortOriginal(alert: UIAlertAction!)
+    func sortOriginal(_ alert: UIAlertAction!)
     {
         filteredData = movies
         tableView.reloadData()
@@ -309,7 +309,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     // Collection View Methods
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
         if let filteredData = filteredData
         {
@@ -321,10 +321,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
     {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CollectionCell", forIndexPath: indexPath) as! CollectionViewCell
-        let movie = filteredData![indexPath.row]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionCell", for: indexPath) as! CollectionViewCell
+        let movie = filteredData![(indexPath as NSIndexPath).row]
         let release = movie["release_date"] as! String
         let rating = String(movie["vote_average"] as! Double)
         let title = movie["title"] as! String
@@ -337,16 +337,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         if posterPath != nil
         {
-            let imageUrl = NSURL(string: baseUrl + posterPath!)
+            let imageUrl = URL(string: baseUrl + posterPath!)
             //cell.posterView.setImageWithURL(imageUrl!)
             
-            let request = NSURLRequest(URL: imageUrl!)
-            cell.posterView.setImageWithURLRequest(request, placeholderImage: nil, success: {(request:NSURLRequest!,response:NSHTTPURLResponse?, image:UIImage!) -> Void in
+            let request = URLRequest(url: imageUrl!)
+            cell.posterView.setImageWith(request, placeholderImage: nil, success: {(request:URLRequest!,response:HTTPURLResponse?, image:UIImage!) -> Void in
                 if response != nil
                 {
                     cell.posterView.alpha = 0
                     cell.posterView.image = image
-                    UIView.animateWithDuration(1.0, animations:
+                    UIView.animate(withDuration: 1.0, animations:
                         {
                             cell.posterView.alpha = 1
                     })
@@ -366,32 +366,32 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         return newCell
     }
     
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath)
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
-        let cell = collectionView.cellForItemAtIndexPath(indexPath)
-        cell?.backgroundColor = UIColor.lightGrayColor()
-        UIView.animateWithDuration(0.3, animations: {
+        let cell = collectionView.cellForItem(at: indexPath)
+        cell?.backgroundColor = UIColor.lightGray
+        UIView.animate(withDuration: 0.3, animations: {
             cell?.backgroundColor = self.customColor
         })
         
     }
     
-    func collectionView(collectionView: UICollectionView, didHighlightItemAtIndexPath indexPath: NSIndexPath)
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath)
     {
-        let cell = collectionView.cellForItemAtIndexPath(indexPath)
-        cell?.backgroundColor = UIColor.lightGrayColor()
+        let cell = collectionView.cellForItem(at: indexPath)
+        cell?.backgroundColor = UIColor.lightGray
     }
     
-    func collectionView(collectionView: UICollectionView, didUnhighlightItemAtIndexPath indexPath: NSIndexPath)
+    func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath)
     {
-        let cell = collectionView.cellForItemAtIndexPath(indexPath)
+        let cell = collectionView.cellForItem(at: indexPath)
         cell?.backgroundColor = customColor
     }
 
     //Show/Hide Collection View and Table View
-    @IBAction func switchViews(sender: AnyObject)
+    @IBAction func switchViews(_ sender: AnyObject)
     {
-        if(collectionView.hidden)
+        if(collectionView.isHidden)
         {
             hideTableView()
         }
@@ -403,13 +403,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func hideTableView()
     {
-        UIView.transitionFromView(tableView, toView: collectionView, duration: 1.0, options: UIViewAnimationOptions.ShowHideTransitionViews, completion: nil)
+        UIView.transition(from: tableView, to: collectionView, duration: 1.0, options: UIViewAnimationOptions.showHideTransitionViews, completion: nil)
         navigationItem.leftBarButtonItem?.image = UIImage(named: "TitleViewIcon")
     }
     
     func hideCollectionView()
     {
-        UIView.transitionFromView(collectionView, toView: tableView, duration: 1.0, options: UIViewAnimationOptions.ShowHideTransitionViews, completion: nil)
+        UIView.transition(from: collectionView, to: tableView, duration: 1.0, options: UIViewAnimationOptions.showHideTransitionViews, completion: nil)
         navigationItem.leftBarButtonItem?.image = UIImage(named: "CollectionViewIcon")
     }
 
@@ -417,23 +417,23 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         if let cell = sender as? UITableViewCell
         {
-            let indexPath = tableView.indexPathForCell(cell)
-            let movie = filteredData![indexPath!.row]
-            let detailViewController = segue.destinationViewController as! DetailViewController
+            let indexPath = tableView.indexPath(for: cell)
+            let movie = filteredData![(indexPath! as NSIndexPath).row]
+            let detailViewController = segue.destination as! DetailViewController
             
             detailViewController.movie = movie
         }
         else if let cell = sender as? UICollectionViewCell
         {
-            let indexPath = collectionView.indexPathForCell(cell)
-            let movie = filteredData![indexPath!.row]
-            let detailViewController = segue.destinationViewController as! DetailViewController
+            let indexPath = collectionView.indexPath(for: cell)
+            let movie = filteredData![(indexPath! as NSIndexPath).row]
+            let detailViewController = segue.destination as! DetailViewController
             
             detailViewController.movie = movie
         }
